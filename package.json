@@ -1,0 +1,16 @@
+{
+  "name": "env-selection-control",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": "22.x" },
+  "scripts": {
+    "build": "next build",
+    "start": "next start",
+    "check:local": "node scripts/check-local.mjs"
+  },
+  "dependencies": {
+    "next": "15.5.24",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}
