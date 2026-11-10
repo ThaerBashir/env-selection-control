@@ -6,11 +6,17 @@
   "scripts": {
     "build": "next build",
     "start": "next start",
-    "check:local": "node scripts/check-local.mjs"
+    "check:local": "node scripts/check-clerk-local.mjs"
   },
   "dependencies": {
+    "@clerk/nextjs": "6.39.6",
     "next": "15.5.24",
     "react": "19.3.1",
     "react-dom": "19.3.1"
+  },
+  "overrides": {
+    "@clerk/backend": "2.33.6",
+    "@clerk/shared": "3.47.8",
+    "@clerk/clerk-react": "5.61.9"
   }
 }

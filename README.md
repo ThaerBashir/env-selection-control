@@ -1,32 +1,38 @@
-# Environment selection control
+# Clerk environment selection control
 
-This small Next.js app checks a direct public environment-variable reference in a Server Component and a Client Component. It uses the key name `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` but does not install Clerk or use any real Clerk configuration.
+This small Next.js app checks whether an explicit public environment reference reaches the Clerk script attribute unchanged. It uses `ClerkProvider dynamic`, a direct `process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` prop and Clerk middleware with a public homepage. It contains no real credentials or account data.
 
-Use only synthetic strings with this app. Do not copy credentials or configuration from another project.
+The middleware is a generic public-root example. It includes no application-specific routes or authentication features.
+
+The original static control remains on `main`. This branch adds Clerk for a separate comparison.
+
+## Versions
+
+- Node.js 22.x and Next.js 15.5.24
+- React and React DOM 19.3.1
+- `@clerk/nextjs` 6.39.6
+- Pinned overrides: backend 2.33.6, shared 3.47.8, clerk-react 5.61.9
 
 ## Local check
 
-Use Node.js 22, install with `npm ci`, then run `npm run check:local`.
+With Node.js 22, run `npm ci` and `npm run check:local`.
 
-The check builds the app three times and verifies the exact rendered output elements through `next start`:
+The check makes two clean production builds with synthetic `pk_test_` strings encoding `env-control-general.invalid$` and `env-control-branch.invalid$`. It starts each build with the other dummy value. It then checks that the original HTML has exactly one Clerk key attribute and that it matches both direct public references and the build input. The build must classify the homepage as dynamic.
 
-1. Build with `CONTROL_GENERAL_PREVIEW`, start with `CONTROL_BRANCH_PREVIEW`, expect the build value.
-2. Rebuild with `CONTROL_BRANCH_PREVIEW`, start with `CONTROL_GENERAL_PREVIEW`, expect the new build value.
-3. Build with the key absent, start with `CONTROL_GENERAL_PREVIEW`, expect `UNSET` in the prerendered page.
+There are two signed-out request checks. A non-document HTTP request reaches the Provider without cookies. A document request uses only a synthetic development-browser marker cookie. This marker does not create a signed-in session. A clean document request without that marker redirects to the nonexistent `.invalid` authentication host; the check records the redirect without following it.
 
-The expected strings live in the check script, not in the application. Local results and build logs are written to the ignored `results/` directory. The page also shows whether client hydration has completed, but the automated local check reads the original HTML only.
+The dummy secret is a fixed invalid string. Every request remains signed out. Results and build logs are written to the ignored `results/` directory. The script clears inherited Clerk configuration from its child-process environment.
 
-## Git Preview check
+## Remote test inputs
 
-In a separate Vercel test project, create the following synthetic records:
+Use only synthetic configuration. Do not copy values from another application.
 
-| Key | Scope | Dummy value |
+| Variable | Scope | Synthetic value |
 | --- | --- | --- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Development, Preview, Production | `CONTROL_GENERAL_PREVIEW` |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Preview, branch `probe/branch` | `CONTROL_BRANCH_PREVIEW` |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | General | `pk_test_ZW52LWNvbnRyb2wtZ2VuZXJhbC5pbnZhbGlkJA==` |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Preview, branch `probe/branch` | `pk_test_ZW52LWNvbnRyb2wtYnJhbmNoLmludmFsaWQk` |
+| `CLERK_SECRET_KEY` | Preview | `sk_test_SYNTHETIC_ONLY_NEVER_VALID_00000000` |
 
-After the initial Production build on `main`, push `probe/general` and `probe/branch` through the connected Git integration. Inspect both the original HTML and the hydrated page on each immutable Preview URL. The unscoped branch should show the general marker; the scoped branch should show the branch marker. Retain the deployment IDs, branch names, commit SHAs and build/cache results.
+This fixture cannot load a real Clerk browser runtime or test authentication with these inputs. A correct result only covers the tested configuration and request paths. It does not explain a different application's output.
 
-This is an independent control. Passing does not prove another project's configuration was selected correctly or explain another app's output.
-
-Public references: [Vercel Preview variables](https://vercel.com/docs/environment-variables#preview-environment-variables), [Next.js public environment variables](https://nextjs.org/docs/15/app/guides/environment-variables#bundling-environment-variables-for-the-browser).
+Public references: [Vercel Preview variables](https://vercel.com/docs/environment-variables#preview-environment-variables), [Next.js public variables](https://nextjs.org/docs/15/app/guides/environment-variables#bundling-environment-variables-for-the-browser), [Clerk Provider source for this release](https://github.com/clerk/javascript/blob/6ff18352535102f4b2fb09f96856724da1aff3bf/packages/nextjs/src/app-router/server/ClerkProvider.tsx).
